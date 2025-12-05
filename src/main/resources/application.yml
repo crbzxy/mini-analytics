@@ -7,7 +7,7 @@ spring:
 
   # Configuración de base de datos MySQL (Spring Boot auto-configuration)
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/ui_analytics?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ui_analytics?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     username: ${SPRING_DATASOURCE_USERNAME:analytics_user}
     password: ${SPRING_DATASOURCE_PASSWORD:analytics_pass}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -48,3 +48,25 @@ springdoc:
     try-it-out-enabled: true
   show-actuator: false
   packages-to-scan: com.miempresa.analytics.controller
+
+# Configuración de JWT
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 horas en milisegundos
+
+# Configuración de usuarios de autenticación
+# ⚠️ SEGURIDAD: Las credenciales por defecto son solo para desarrollo.
+# EN PRODUCCIÓN, DEBES configurar variables de entorno con credenciales fuertes.
+# Las credenciales débiles comunes (user/password, admin/admin) serán rechazadas.
+auth:
+  users:
+    user:
+      # Usuario regular - CAMBIAR en producción
+      username: ${AUTH_USER_USERNAME:analytics_user_dev}
+      password: ${AUTH_USER_PASSWORD:ChangeMe123!Secure}
+      roles: USER
+    admin:
+      # Usuario administrador - CAMBIAR en producción
+      username: ${AUTH_ADMIN_USERNAME:analytics_admin_dev}
+      password: ${AUTH_ADMIN_PASSWORD:ChangeMe456!Secure}
+      roles: USER,ADMIN

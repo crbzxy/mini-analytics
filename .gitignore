@@ -10,6 +10,7 @@ application-prod.properties
 application-dev.yml
 application-dev.properties
 *.env
+!.env.example
 .env
 .env.local
 .env.*.local

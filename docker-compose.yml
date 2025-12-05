@@ -33,6 +33,16 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ui_analytics}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-analytics_user}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-analytics_pass}
+      # Variables de autenticación
+      # ⚠️ SEGURIDAD: Las credenciales por defecto son solo para desarrollo.
+      # EN PRODUCCIÓN, DEBES configurar variables de entorno con credenciales fuertes.
+      AUTH_USER_USERNAME: ${AUTH_USER_USERNAME:-analytics_user_dev}
+      AUTH_USER_PASSWORD: ${AUTH_USER_PASSWORD:-ChangeMe123!Secure}
+      AUTH_ADMIN_USERNAME: ${AUTH_ADMIN_USERNAME:-analytics_admin_dev}
+      AUTH_ADMIN_PASSWORD: ${AUTH_ADMIN_PASSWORD:-ChangeMe456!Secure}
+      # Variables JWT
+      JWT_SECRET: ${JWT_SECRET:-mySecretKeyForJWTTokenGenerationMustBeAtLeast256BitsLongForHS256Algorithm}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
     networks:
       - analytics-network
     depends_on:
