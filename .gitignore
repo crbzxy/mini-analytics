@@ -1,0 +1,214 @@
+# ============================================
+# DATOS SENSIBLES Y CONFIGURACIÓN
+# ============================================
+
+# Archivos de configuración con credenciales
+application-local.yml
+application-local.properties
+application-prod.yml
+application-prod.properties
+application-dev.yml
+application-dev.properties
+*.env
+.env
+.env.local
+.env.*.local
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.jks
+
+# Variables de entorno
+.envrc
+
+# ============================================
+# MAVEN
+# ============================================
+
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ============================================
+# SPRING BOOT
+# ============================================
+
+*.log
+*.log.*
+logs/
+*.jar
+!**/src/main/**/target/*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ============================================
+# IDE - IntelliJ IDEA
+# ============================================
+
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+atlassian-ide-plugin.xml
+
+# ============================================
+# IDE - Eclipse
+# ============================================
+
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# ============================================
+# IDE - VS Code
+# ============================================
+
+.vscode/
+*.code-workspace
+
+# ============================================
+# DOCKER
+# ============================================
+
+# No ignorar Dockerfile y docker-compose.yml, pero sí datos sensibles
+docker-compose.override.yml
+docker-compose.local.yml
+*.dockerignore.local
+
+# ============================================
+# BASE DE DATOS
+# ============================================
+
+# Archivos de base de datos locales
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+data/
+*.sql.backup
+
+# ============================================
+# SISTEMA OPERATIVO
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# ARCHIVOS TEMPORALES
+# ============================================
+
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.pid.lock
+*.lock
+
+# ============================================
+# COBERTURA DE CÓDIGO
+# ============================================
+
+coverage/
+*.lcov
+.nyc_output/
+.jest/
+
+# ============================================
+# ARCHIVOS DE BACKUP
+# ============================================
+
+*.backup
+*.bak
+*.old
+*.orig
+*.save
+*~
+
+# ============================================
+# ARCHIVOS ESPECÍFICOS DEL PROYECTO
+# ============================================
+
+# Logs de aplicación
+logs/
+*.log
+application.log
+error.log
+
+# Archivos de configuración local (pueden contener credenciales)
+config/local/
+config/development/
+config/production/
+
+# Archivos de certificados y claves
+*.crt
+*.cer
+*.der
+*.pfx
+*.p7b
+*.p7c
+*.p7m
+*.p7s
+
+# Archivos de configuración con datos sensibles
+**/application-*.yml
+!application.yml
+!application-example.yml
+
+**/application-*.properties
+!application.properties
+!application-example.properties
+
