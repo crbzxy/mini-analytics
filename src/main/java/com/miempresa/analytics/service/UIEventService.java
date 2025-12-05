@@ -1,12 +1,11 @@
 package com.miempresa.analytics.service;
 
-import com.miempresa.analytics.dto.ButtonEventRequest;
-import com.miempresa.analytics.dto.ButtonEventResponse;
-import com.miempresa.analytics.dto.ButtonMonthlyStat;
+import com.miempresa.analytics.dto.UIEventRequest;
+import com.miempresa.analytics.dto.UIEventResponse;
+import com.miempresa.analytics.dto.UIMonthlyStat;
 import com.miempresa.analytics.dto.PageResponse;
-import com.miempresa.analytics.model.ButtonEvent;
-import com.miempresa.analytics.repository.ButtonEventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.miempresa.analytics.model.UIEvent;
+import com.miempresa.analytics.repository.UIEventRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,37 +22,45 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ButtonEventService {
+public class UIEventService {
 
-    private final ButtonEventRepository repository;
+    private final UIEventRepository repository;
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
     // Inyección de dependencias mediante constructor (Spring Boot best practice)
-    public ButtonEventService(ButtonEventRepository repository) {
+    public UIEventService(UIEventRepository repository) {
         this.repository = repository;
     }
 
     /**
-     * Valida y guarda un evento de botón.
-     * Valida que type y buttonId no estén vacíos.
+     * Valida y guarda un evento de elemento UI.
+     * Valida que type y elementId no estén vacíos.
      * 
      * @param request DTO con los datos del evento
-     * @throws IllegalArgumentException si type o buttonId están vacíos
+     * @throws IllegalArgumentException si type o elementId están vacíos
      */
     @Transactional
-    public void save(ButtonEventRequest request) {
+    public void save(UIEventRequest request) {
         // Validación de campos obligatorios
         if (request.getType() == null || request.getType().trim().isEmpty()) {
             throw new IllegalArgumentException("type is required");
         }
-        if (request.getButtonId() == null || request.getButtonId().trim().isEmpty()) {
-            throw new IllegalArgumentException("buttonId is required");
+        if (request.getElementId() == null || request.getElementId().trim().isEmpty()) {
+            throw new IllegalArgumentException("elementId is required");
         }
 
         // Mapeo del DTO a la entidad
-        ButtonEvent event = new ButtonEvent();
+        UIEvent event = new UIEvent();
         event.setType(request.getType().trim());
-        event.setButtonId(request.getButtonId().trim());
+        event.setElementId(request.getElementId().trim());
+        
+        // elementType es opcional (button, link, card, image, etc.)
+        if (request.getElementType() != null && !request.getElementType().trim().isEmpty()) {
+            event.setElementType(request.getElementType().trim());
+        } else {
+            // Valor por defecto si no se especifica
+            event.setElementType("button");
+        }
         
         // appId es opcional
         if (request.getAppId() != null && !request.getAppId().trim().isEmpty()) {
@@ -81,6 +88,9 @@ public class ButtonEventService {
         if (request.getScreenWidth() != null) {
             event.setScreenWidth(request.getScreenWidth());
         }
+        if (request.getScreenHeight() != null) {
+            event.setScreenHeight(request.getScreenHeight());
+        }
 
         // createdAt: usar el del request si viene, sino usar fecha/hora actual
         if (request.getCreatedAt() != null && !request.getCreatedAt().trim().isEmpty()) {
@@ -100,17 +110,17 @@ public class ButtonEventService {
     }
 
     /**
-     * Obtiene estadísticas mensuales agrupadas por button_id, type y mes.
+     * Obtiene estadísticas mensuales agrupadas por element_id, type y mes.
      * 
      * @return Lista de estadísticas mensuales
      */
     @Transactional(readOnly = true)
-    public List<ButtonMonthlyStat> getMonthlyStats() {
+    public List<UIMonthlyStat> getMonthlyStats() {
         List<Object[]> results = repository.findMonthlyStats();
-        List<ButtonMonthlyStat> stats = new ArrayList<>();
+        List<UIMonthlyStat> stats = new ArrayList<>();
 
         for (Object[] row : results) {
-            String buttonId = (String) row[0];
+            String elementId = (String) row[0];
             String type = (String) row[1];
             String monthStr = (String) row[2]; // Formato: "YYYY-MM-01"
             Long totalClicks = ((Number) row[3]).longValue();
@@ -118,7 +128,7 @@ public class ButtonEventService {
             // Parsear el mes a LocalDate
             LocalDate month = LocalDate.parse(monthStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-            ButtonMonthlyStat stat = new ButtonMonthlyStat(buttonId, type, month, totalClicks);
+            UIMonthlyStat stat = new UIMonthlyStat(elementId, type, month, totalClicks);
             stats.add(stat);
         }
 
@@ -133,7 +143,7 @@ public class ButtonEventService {
      * @return Respuesta paginada con eventos
      */
     @Transactional(readOnly = true)
-    public PageResponse<ButtonEventResponse> getAllEvents(int page, int size) {
+    public PageResponse<UIEventResponse> getAllEvents(int page, int size) {
         // Validar parámetros de paginación
         if (page < 0) {
             page = 0;
@@ -146,10 +156,10 @@ public class ButtonEventService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ButtonEvent> eventPage = repository.findAll(pageable);
+        Page<UIEvent> eventPage = repository.findAll(pageable);
 
         // Mapear entidades a DTOs
-        List<ButtonEventResponse> content = eventPage.getContent().stream()
+        List<UIEventResponse> content = eventPage.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
 
@@ -168,26 +178,28 @@ public class ButtonEventService {
      * @return Evento encontrado o null si no existe
      */
     @Transactional(readOnly = true)
-    public Optional<ButtonEventResponse> getEventById(Long id) {
+    public Optional<UIEventResponse> getEventById(Long id) {
         return repository.findById(id)
                 .map(this::mapToResponse);
     }
 
     /**
-     * Mapea una entidad ButtonEvent a un DTO ButtonEventResponse.
+     * Mapea una entidad UIEvent a un DTO UIEventResponse.
      */
-    private ButtonEventResponse mapToResponse(ButtonEvent event) {
-        return new ButtonEventResponse(
+    private UIEventResponse mapToResponse(UIEvent event) {
+        return new UIEventResponse(
                 event.getId(),
                 event.getType(),
                 event.getAppId(),
-                event.getButtonId(),
+                event.getElementId(),
+                event.getElementType(),
                 event.getRoute(),
                 event.getUserId(),
                 event.getMetadata(),
                 event.getCoordinateX(),
                 event.getCoordinateY(),
                 event.getScreenWidth(),
+                event.getScreenHeight(),
                 event.getCreatedAt()
         );
     }

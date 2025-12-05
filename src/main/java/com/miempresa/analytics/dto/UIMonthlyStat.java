@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 
-public class ButtonMonthlyStat {
+public class UIMonthlyStat {
 
-    @JsonProperty("buttonId")
-    private String buttonId;
+    @JsonProperty("elementId")
+    private String elementId;
 
     @JsonProperty("type")
     private String type;
@@ -21,23 +21,23 @@ public class ButtonMonthlyStat {
     private long totalClicks;
 
     // Constructores
-    public ButtonMonthlyStat() {
+    public UIMonthlyStat() {
     }
 
-    public ButtonMonthlyStat(String buttonId, String type, LocalDate month, long totalClicks) {
-        this.buttonId = buttonId;
+    public UIMonthlyStat(String elementId, String type, LocalDate month, long totalClicks) {
+        this.elementId = elementId;
         this.type = type;
         this.month = month;
         this.totalClicks = totalClicks;
     }
 
     // Getters y Setters
-    public String getButtonId() {
-        return buttonId;
+    public String getElementId() {
+        return elementId;
     }
 
-    public void setButtonId(String buttonId) {
-        this.buttonId = buttonId;
+    public void setElementId(String elementId) {
+        this.elementId = elementId;
     }
 
     public String getType() {

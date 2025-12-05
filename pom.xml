@@ -13,10 +13,10 @@
     </parent>
 
     <groupId>com.miempresa</groupId>
-    <artifactId>button-analytics-service</artifactId>
+    <artifactId>ui-analytics-service</artifactId>
     <version>1.0.0</version>
-    <name>Button Analytics Service</name>
-    <description>Microservicio de analítica de botones</description>
+    <name>UI Analytics Service</name>
+    <description>Microservicio de analítica de elementos de UI</description>
 
     <properties>
         <java.version>1.8</java.version>
@@ -49,6 +49,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- SpringDoc OpenAPI (Swagger) -->

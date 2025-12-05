@@ -2,10 +2,10 @@ services:
   # Servicio MySQL
   mysql:
     image: mysql:8.0
-    container_name: button-analytics-mysql
+    container_name: ui-analytics-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-button_analytics}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ui_analytics}
       MYSQL_USER: ${MYSQL_USER:-analytics_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-analytics_pass}
     ports:
@@ -22,15 +22,15 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   # Servicio Backend Spring Boot
-  button-analytics-service:
+  ui-analytics-service:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: button-analytics-service
+    container_name: ui-analytics-service
     ports:
       - "8085:8085"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-button_analytics}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-ui_analytics}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-analytics_user}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-analytics_pass}
     networks:

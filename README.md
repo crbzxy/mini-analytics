@@ -1,12 +1,14 @@
-# Button Analytics Service
+# UI Analytics Service
 
-Microservicio REST de analítica de botones desarrollado en **Java 8** con **Spring Boot 2.7.x** y **MySQL**. Este servicio recibe eventos de clic de botones desde un frontend React y los almacena en una base de datos MySQL para su posterior análisis.
+Microservicio REST de analítica de elementos de UI desarrollado en **Java 8** con **Spring Boot 2.7.x** y **MySQL**. Este servicio recibe eventos de interacción con elementos de UI (botones, links, cards, imágenes, etc.) desde un frontend React y los almacena en una base de datos MySQL para su posterior análisis.
+
+**Nota:** Este proyecto fue renombrado de "Button Analytics" a "UI Analytics" para reflejar su capacidad de rastrear cualquier tipo de elemento de UI, no solo botones.
 
 ## Descripción del Proyecto
 
 Este microservicio expone una API REST JSON que permite:
 
-- **Registrar eventos de clic en botones**: El frontend puede enviar eventos cada vez que un usuario hace clic en un botón, incluyendo información sobre el tipo de cliente, la aplicación, la ruta, y metadatos adicionales.
+- **Registrar eventos de interacción con elementos UI**: El frontend puede enviar eventos cada vez que un usuario interactúa con cualquier elemento de UI (botón, link, card, imagen, etc.), incluyendo información sobre el tipo de cliente, la aplicación, la ruta, coordenadas, dimensiones de pantalla y metadatos adicionales.
 
 - **Consultar estadísticas mensuales**: Obtener agregados de clicks por botón, tipo de cliente y mes para análisis y reportes.
 
@@ -15,6 +17,8 @@ Este microservicio expone una API REST JSON que permite:
 - **`type`**: Tipo de cliente o canal (obligatorio). Ejemplos: `"WEB"`, `"KIOSK"`, `"MOBILE"`, `"ADMIN"`, etc. Este campo identifica el tipo de interfaz o canal desde donde se origina el evento.
 
 - **`appId`**: Identificador dinámico propio de la empresa para la instancia o aplicación concreta (opcional). Ejemplos: `"PUESTO_001"`, `"KIOSK_CEDIS"`, `"SEPOMEX_WEB_V2"`. Este campo permite distinguir entre diferentes instancias o versiones de la misma aplicación.
+
+- **`elementType`**: Tipo de elemento de UI con el que se interactuó (opcional). Ejemplos: `"button"`, `"link"`, `"card"`, `"image"`, `"input"`, `"dropdown"`, `"menu"`, etc. Si no se especifica, por defecto es `"button"`. Este campo permite rastrear interacciones con diferentes tipos de elementos de la interfaz, no solo botones.
 
 ## Endpoints
 
@@ -26,36 +30,58 @@ La API está documentada con Swagger/OpenAPI. Accede a la documentación interac
 - **API Docs (JSON)**: http://localhost:8085/api-docs
 - **API Docs (YAML)**: http://localhost:8085/api-docs.yaml
 
-### POST /api/events/button
+### ⚠️ Autenticación
 
-Registra un evento de clic en un botón.
+**IMPORTANTE:** El endpoint `POST /v1/events` requiere autenticación HTTP Basic.
+
+**Credenciales por defecto:**
+- Usuario: `user`
+- Contraseña: `password`
+
+**Ejemplo de uso con curl:**
+```bash
+curl -X POST http://localhost:8085/v1/events \
+  -u user:password \
+  -H "Content-Type: application/json" \
+  -d '{"type":"WEB","elementId":"BTN_TEST","elementType":"button"}'
+```
+
+Los endpoints GET (lectura) son públicos y no requieren autenticación.
+
+### POST /v1/events
+
+Registra un evento de interacción con cualquier elemento de UI (botón, link, card, imagen, etc.). **Requiere autenticación.**
 
 **Request Body (JSON):**
 ```json
 {
   "type": "KIOSK",
   "appId": "PUESTO_001",
-  "buttonId": "BTN_PAGAR",
+  "elementId": "BTN_PAGAR",
   "route": "/pago",
   "userId": "user123",
   "metadataJson": "{\"sessionId\": \"abc123\"}",
-  "coordinateX": 150,
-  "coordinateY": 300,
-  "screenWidth": 1920,
-  "createdAt": "2024-01-15T10:30:00"
+      "coordinateX": 150,
+      "coordinateY": 300,
+      "screenWidth": 1920,
+      "screenHeight": 1080,
+      "elementType": "button",
+      "createdAt": "2024-01-15T10:30:00"
 }
 ```
 
 **Campos:**
 - `type` (string, **obligatorio**, max 50 caracteres): Tipo de cliente/canal (ej: "WEB", "KIOSK")
 - `appId` (string, opcional): Identificador de la instancia/aplicación
-- `buttonId` (string, **obligatorio**, max 100 caracteres): ID del botón que se hizo clic
+- `elementId` (string, **obligatorio**, max 100 caracteres): ID del elemento UI que se interactuó
+- `elementType` (string, opcional, max 50 caracteres): Tipo de elemento UI (ej: "button", "link", "card", "image", "input", "dropdown"). Si no se especifica, por defecto es "button"
 - `route` (string, opcional): Ruta o página donde ocurrió el evento
-- `userId` (string, opcional): ID del usuario
+- `userId` (string, opcional): Identificador único del usuario que realizó el clic. Puede ser un ID de sesión, ID de usuario autenticado, o cualquier identificador que permita rastrear eventos por usuario
 - `metadataJson` (string, opcional): JSON adicional como string
 - `coordinateX` (integer, opcional): Coordenada X del clic en píxeles
 - `coordinateY` (integer, opcional): Coordenada Y del clic en píxeles
 - `screenWidth` (integer, opcional): Ancho de la pantalla en píxeles
+- `screenHeight` (integer, opcional): Alto de la pantalla en píxeles
 - `createdAt` (string ISO-8601, opcional): Fecha/hora del evento. Si no se envía, se usa la fecha/hora actual del servidor
 
 **Respuestas:**
@@ -74,6 +100,8 @@ Registra un evento de clic en un botón.
     "error": "Validation failed: {type=type is required}"
   }
   ```
+- `401 Unauthorized`: No autenticado (falta credenciales)
+- `403 Forbidden`: No autorizado (credenciales inválidas)
 - `500 Internal Server Error`: Error interno del servidor
 
 ### GET /api/events
@@ -86,8 +114,10 @@ Obtiene todos los eventos con paginado.
 
 **Ejemplo de Request:**
 ```
-GET /api/events?page=0&size=10
+GET /v1/events?page=0&size=10
 ```
+
+**Nota:** Este endpoint es público y no requiere autenticación.
 
 **Response (JSON):**
 ```json
@@ -100,13 +130,15 @@ GET /api/events?page=0&size=10
         "id": 1,
         "type": "KIOSK",
         "appId": "PUESTO_001",
-        "buttonId": "BTN_PAGAR",
+        "elementId": "BTN_PAGAR",
         "route": "/pago",
         "userId": "user123",
         "metadata": "{\"sessionId\": \"abc123\"}",
         "coordinateX": 150,
         "coordinateY": 300,
         "screenWidth": 1920,
+        "screenHeight": 1080,
+        "elementType": "button",
         "createdAt": "2024-01-15T10:30:00"
       }
     ],
@@ -120,7 +152,7 @@ GET /api/events?page=0&size=10
 }
 ```
 
-### GET /api/events/{id}
+### GET /v1/events/{id}
 
 Obtiene un evento específico por su ID.
 
@@ -129,8 +161,10 @@ Obtiene un evento específico por su ID.
 
 **Ejemplo de Request:**
 ```
-GET /api/events/1
+GET /v1/events/1
 ```
+
+**Nota:** Este endpoint es público y no requiere autenticación.
 
 **Respuestas:**
 - `200 OK`: Evento encontrado
@@ -142,7 +176,7 @@ GET /api/events/1
       "id": 1,
       "type": "KIOSK",
       "appId": "PUESTO_001",
-      "buttonId": "BTN_PAGAR",
+      "elementId": "BTN_PAGAR",
       "route": "/pago",
       "userId": "user123",
       "metadata": "{\"sessionId\": \"abc123\"}",
@@ -161,7 +195,7 @@ GET /api/events/1
   }
   ```
 
-### GET /api/stats/monthly
+### GET /v1/stats/monthly
 
 Obtiene estadísticas mensuales agrupadas por botón, tipo y mes.
 
@@ -172,13 +206,13 @@ Obtiene estadísticas mensuales agrupadas por botón, tipo y mes.
   "message": "Operation successful",
   "data": [
     {
-      "buttonId": "BTN_PAGAR",
+      "elementId": "BTN_PAGAR",
       "type": "KIOSK",
       "month": "2024-01-01",
       "totalClicks": 150
     },
     {
-      "buttonId": "BTN_CANCELAR",
+      "elementId": "BTN_CANCELAR",
       "type": "WEB",
       "month": "2024-01-01",
       "totalClicks": 45
@@ -188,10 +222,12 @@ Obtiene estadísticas mensuales agrupadas por botón, tipo y mes.
 ```
 
 **Campos de respuesta:**
-- `buttonId` (string): ID del botón
+- `elementId` (string): ID del elemento UI
 - `type` (string): Tipo de cliente/canal
 - `month` (string, formato YYYY-MM-01): Mes de la estadística
-- `totalClicks` (number): Total de clicks en ese mes para ese botón y tipo
+- `totalClicks` (number): Total de clicks en ese mes para ese elemento y tipo
+
+**Nota:** Este endpoint es público y no requiere autenticación.
 
 ## Requisitos Previos
 
@@ -295,7 +331,7 @@ Si deseas construir el JAR manualmente:
 mvn clean package
 ```
 
-Esto generará un archivo `target/button-analytics-service-1.0.0.jar`.
+Esto generará un archivo `target/ui-analytics-service-1.0.0.jar`.
 
 ### 2. Levantar con Docker Compose
 
@@ -317,12 +353,19 @@ Este comando:
 docker compose ps
 ```
 
-Deberías ver ambos servicios (`button-analytics-service` y `mysql`) con estado `Up`.
+Deberías ver ambos servicios (`ui-analytics-service` y `mysql`) con estado `Up`.
 
 ### 4. Verificar que el backend responde
 
 ```bash
-curl http://localhost:8085/api/stats/monthly
+# Endpoint público (no requiere autenticación)
+curl http://localhost:8085/v1/stats/monthly
+
+# Endpoint protegido (requiere autenticación)
+curl -u user:password http://localhost:8085/v1/events \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"type":"WEB","elementId":"TEST","elementType":"button"}'
 ```
 
 Deberías recibir una respuesta JSON (probablemente un array vacío `[]` si no hay datos aún).
@@ -334,7 +377,7 @@ Deberías recibir una respuesta JSON (probablemente un array vacío `[]` si no h
 docker compose logs -f
 
 # Solo logs del backend
-docker compose logs -f button-analytics-service
+docker compose logs -f ui-analytics-service
 
 # Solo logs de MySQL
 docker compose logs -f mysql
@@ -351,26 +394,30 @@ docker compose logs -f mysql
 ### Registrar un evento de clic
 
 ```typescript
-async function registerButtonClick(
+async function registerUIElementClick(
   type: string,
   appId: string | null,
-  buttonId: string,
+  elementId: string,
+  elementType: string = 'button',
   route?: string
 ) {
   try {
-    const response = await fetch('http://localhost:8085/api/events/button', {
+    const response = await fetch('http://localhost:8085/v1/events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + btoa('user:password') // Base64 encode de user:password
       },
       body: JSON.stringify({
         type: type,           // Ej: 'KIOSK', 'WEB'
         appId: appId,         // Ej: 'PUESTO_001' (opcional)
-        buttonId: buttonId,   // Ej: 'BTN_PAGAR'
+        elementId: elementId,   // Ej: 'BTN_PAGAR'
+        elementType: 'button', // Tipo de elemento: 'button', 'link', 'card', etc.
         route: route,         // Ej: '/pago' (opcional)
         coordinateX: event.clientX,  // Coordenada X del clic (opcional)
         coordinateY: event.clientY,  // Coordenada Y del clic (opcional)
         screenWidth: window.screen.width,  // Ancho de pantalla (opcional)
+        screenHeight: window.screen.height,  // Alto de pantalla (opcional)
         createdAt: new Date().toISOString(), // Opcional
       }),
     });
@@ -397,7 +444,7 @@ registerButtonClick('KIOSK', 'PUESTO_001', 'BTN_PAGAR', '/pago');
 async function getEvents(page: number = 0, size: number = 10) {
   try {
     const response = await fetch(
-      `http://localhost:8085/api/events?page=${page}&size=${size}`
+      `http://localhost:8085/v1/events?page=${page}&size=${size}`
     );
     const result = await response.json();
     if (result.success) {
@@ -417,7 +464,7 @@ async function getEvents(page: number = 0, size: number = 10) {
 ```typescript
 async function getEventById(id: number) {
   try {
-    const response = await fetch(`http://localhost:8085/api/events/${id}`);
+    const response = await fetch(`http://localhost:8085/v1/events/${id}`);
     const result = await response.json();
     if (result.success) {
       console.log('Evento:', result.data);
@@ -436,7 +483,7 @@ async function getEventById(id: number) {
 ```typescript
 async function getMonthlyStats() {
   try {
-    const response = await fetch('http://localhost:8085/api/stats/monthly');
+    const response = await fetch('http://localhost:8085/v1/stats/monthly');
     const result = await response.json();
     if (result.success) {
       console.log('Estadísticas:', result.data);
@@ -450,27 +497,29 @@ async function getMonthlyStats() {
 
 ## Modelo de Datos
 
-### Tabla: `button_events`
+### Tabla: `ui_events`
 
 | Campo       | Tipo          | Nullable | Descripción                                    |
 |-------------|---------------|----------|------------------------------------------------|
 | `id`        | BIGINT        | NO       | ID autoincremental (PK)                        |
 | `type`      | VARCHAR(50)   | NO       | Tipo de cliente/canal (WEB, KIOSK, etc.)       |
 | `app_id`    | VARCHAR(100)  | YES      | Identificador de instancia/aplicación           |
-| `button_id` | VARCHAR(100)  | NO       | ID del botón                                    |
+| `element_id` | VARCHAR(100)  | NO       | ID del elemento UI que se interactuó            |
+| `element_type` | VARCHAR(50) | YES      | Tipo de elemento UI (button, link, card, etc.)   |
 | `route`     | VARCHAR(255)   | YES      | Ruta o página donde ocurrió el evento           |
-| `user_id`   | VARCHAR(100)  | YES      | ID del usuario                                  |
+| `user_id`   | VARCHAR(100)  | YES      | Identificador único del usuario que realizó el clic |
 | `metadata`  | TEXT          | YES      | JSON adicional como string                      |
 | `coordinate_x` | INT        | YES      | Coordenada X del clic en píxeles                |
 | `coordinate_y` | INT        | YES      | Coordenada Y del clic en píxeles                |
 | `screen_width` | INT        | YES      | Ancho de la pantalla en píxeles                  |
+| `screen_height` | INT       | YES      | Alto de la pantalla en píxeles                   |
 | `created_at`| DATETIME      | NO       | Fecha y hora de creación del evento             |
 
 ### Índices
 
 La tabla se crea automáticamente con `spring.jpa.hibernate.ddl-auto=update`. Para producción, se recomienda crear índices en:
 - `type`
-- `button_id`
+- `element_id`
 - `created_at`
 - `app_id` (si se usa frecuentemente)
 
@@ -480,7 +529,7 @@ El proyecto usa variables de entorno para la configuración de la base de datos.
 
 ```env
 MYSQL_ROOT_PASSWORD=root_password
-MYSQL_DATABASE=button_analytics
+MYSQL_DATABASE=ui_analytics
 MYSQL_USER=analytics_user
 MYSQL_PASSWORD=analytics_pass
 ```
@@ -566,11 +615,14 @@ button-analytics-service/
 3. **DTOs de respuesta estándar**: `ApiResponse<T>` para respuestas uniformes
 4. **Paginado**: Implementación de paginado para listas grandes
 5. **Documentación API**: Swagger/OpenAPI para documentación interactiva
-6. **Logging**: Uso de SLF4J para logging estructurado
-7. **Separación de capas**: Controller → Service → Repository
-8. **Transacciones**: Uso de `@Transactional` para operaciones de base de datos
-9. **CORS configurado**: Permite llamadas desde frontend React
-10. **Health checks**: Configurados en Docker para monitoreo
+6. **Seguridad**: Spring Security con autenticación HTTP Basic para endpoints de modificación
+7. **Versionado de API**: Prefijo `/v1` para versionado de endpoints
+8. **Logging**: Uso de SLF4J para logging estructurado
+9. **Separación de capas**: Controller → Service → Repository
+10. **Transacciones**: Uso de `@Transactional` para operaciones de base de datos
+11. **CORS configurado**: Permite llamadas desde frontend React
+12. **Health checks**: Configurados en Docker para monitoreo
+13. **API genérica**: Soporte para múltiples tipos de elementos UI, no solo botones
 
 ## Futuras Extensiones
 
@@ -582,12 +634,12 @@ button-analytics-service/
    - `type` (tipo de cliente)
    - `appId` (instancia/aplicación)
    - Rango de fechas (desde/hasta)
-   - `buttonId` específico
+   - `elementId` específico
 
 3. **Filtros en eventos**: Añadir filtros al endpoint `/api/events` para buscar por:
    - `type`
    - `appId`
-   - `buttonId`
+   - `elementId`
    - Rango de fechas
 
 4. **Endpoints adicionales**:

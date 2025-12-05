@@ -4,8 +4,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "button_events")
-public class ButtonEvent {
+@Table(name = "ui_events")
+public class UIEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,8 +17,11 @@ public class ButtonEvent {
     @Column(name = "app_id", length = 100)
     private String appId;
 
-    @Column(name = "button_id", nullable = false, length = 100)
-    private String buttonId;
+    @Column(name = "element_id", nullable = false, length = 100)
+    private String elementId;
+
+    @Column(name = "element_type", length = 50)
+    private String elementType;
 
     @Column(name = "route", length = 255)
     private String route;
@@ -38,25 +41,31 @@ public class ButtonEvent {
     @Column(name = "screen_width")
     private Integer screenWidth;
 
+    @Column(name = "screen_height")
+    private Integer screenHeight;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     // Constructores
-    public ButtonEvent() {
+    public UIEvent() {
     }
 
-    public ButtonEvent(String type, String appId, String buttonId, String route, 
-                      String userId, String metadata, Integer coordinateX, 
-                      Integer coordinateY, Integer screenWidth, LocalDateTime createdAt) {
+    public UIEvent(String type, String appId, String elementId, String elementType, 
+                      String route, String userId, String metadata, Integer coordinateX, 
+                      Integer coordinateY, Integer screenWidth, Integer screenHeight, 
+                      LocalDateTime createdAt) {
         this.type = type;
         this.appId = appId;
-        this.buttonId = buttonId;
+        this.elementId = elementId;
+        this.elementType = elementType;
         this.route = route;
         this.userId = userId;
         this.metadata = metadata;
         this.coordinateX = coordinateX;
         this.coordinateY = coordinateY;
         this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
         this.createdAt = createdAt;
     }
 
@@ -85,12 +94,12 @@ public class ButtonEvent {
         this.appId = appId;
     }
 
-    public String getButtonId() {
-        return buttonId;
+    public String getElementId() {
+        return elementId;
     }
 
-    public void setButtonId(String buttonId) {
-        this.buttonId = buttonId;
+    public void setElementId(String elementId) {
+        this.elementId = elementId;
     }
 
     public String getRoute() {
@@ -147,6 +156,22 @@ public class ButtonEvent {
 
     public void setScreenWidth(Integer screenWidth) {
         this.screenWidth = screenWidth;
+    }
+
+    public Integer getScreenHeight() {
+        return screenHeight;
+    }
+
+    public void setScreenHeight(Integer screenHeight) {
+        this.screenHeight = screenHeight;
+    }
+
+    public String getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(String elementType) {
+        this.elementType = elementType;
     }
 }
 

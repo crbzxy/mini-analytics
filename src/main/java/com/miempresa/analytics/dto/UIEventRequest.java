@@ -1,21 +1,27 @@
 package com.miempresa.analytics.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDateTime;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
-public class ButtonEventResponse {
-
-    @JsonProperty("id")
-    private Long id;
+public class UIEventRequest {
 
     @JsonProperty("type")
+    @NotBlank(message = "type is required")
+    @Size(max = 50, message = "type must not exceed 50 characters")
     private String type;
 
     @JsonProperty("appId")
     private String appId;
 
-    @JsonProperty("buttonId")
-    private String buttonId;
+    @JsonProperty("elementId")
+    @NotBlank(message = "elementId is required")
+    @Size(max = 100, message = "elementId must not exceed 100 characters")
+    private String elementId;
+
+    @JsonProperty("elementType")
+    @Size(max = 50, message = "elementType must not exceed 50 characters")
+    private String elementType;
 
     @JsonProperty("route")
     private String route;
@@ -23,8 +29,8 @@ public class ButtonEventResponse {
     @JsonProperty("userId")
     private String userId;
 
-    @JsonProperty("metadata")
-    private String metadata;
+    @JsonProperty("metadataJson")
+    private String metadataJson;
 
     @JsonProperty("coordinateX")
     private Integer coordinateX;
@@ -35,39 +41,17 @@ public class ButtonEventResponse {
     @JsonProperty("screenWidth")
     private Integer screenWidth;
 
+    @JsonProperty("screenHeight")
+    private Integer screenHeight;
+
     @JsonProperty("createdAt")
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     // Constructores
-    public ButtonEventResponse() {
-    }
-
-    public ButtonEventResponse(Long id, String type, String appId, String buttonId, 
-                              String route, String userId, String metadata, 
-                              Integer coordinateX, Integer coordinateY, Integer screenWidth,
-                              LocalDateTime createdAt) {
-        this.id = id;
-        this.type = type;
-        this.appId = appId;
-        this.buttonId = buttonId;
-        this.route = route;
-        this.userId = userId;
-        this.metadata = metadata;
-        this.coordinateX = coordinateX;
-        this.coordinateY = coordinateY;
-        this.screenWidth = screenWidth;
-        this.createdAt = createdAt;
+    public UIEventRequest() {
     }
 
     // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getType() {
         return type;
     }
@@ -84,12 +68,12 @@ public class ButtonEventResponse {
         this.appId = appId;
     }
 
-    public String getButtonId() {
-        return buttonId;
+    public String getElementId() {
+        return elementId;
     }
 
-    public void setButtonId(String buttonId) {
-        this.buttonId = buttonId;
+    public void setElementId(String elementId) {
+        this.elementId = elementId;
     }
 
     public String getRoute() {
@@ -108,19 +92,19 @@ public class ButtonEventResponse {
         this.userId = userId;
     }
 
-    public String getMetadata() {
-        return metadata;
+    public String getMetadataJson() {
+        return metadataJson;
     }
 
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
+    public void setMetadataJson(String metadataJson) {
+        this.metadataJson = metadataJson;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
@@ -146,6 +130,22 @@ public class ButtonEventResponse {
 
     public void setScreenWidth(Integer screenWidth) {
         this.screenWidth = screenWidth;
+    }
+
+    public Integer getScreenHeight() {
+        return screenHeight;
+    }
+
+    public void setScreenHeight(Integer screenHeight) {
+        this.screenHeight = screenHeight;
+    }
+
+    public String getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(String elementType) {
+        this.elementType = elementType;
     }
 }
 
